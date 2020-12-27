@@ -1,0 +1,456 @@
+<html lang="ko">
+<head>
+    <!-- Webpage Title -->
+    <title> Happy New Year 2021 l 새해 목표 응원 사이트 </title>
+
+    <!-- Required meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+
+    <!-- 구글폰트 -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+
+    <style type="text/css">
+        * {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: whitesmoke;
+        }
+
+        .wrap {
+            margin: 2em auto;
+        }
+
+        /*.img {*/
+        /*    background-image: url('https://www.urbanbrush.net/web/wp-content/uploads/edd/2017/12/web-20171222003803097338.png');*/
+        /*    background-size: cover;*/
+        /*    background-position: center;*/
+        /*    width: 700px;*/
+        /*    height: 500px;*/
+        /*}*/
+        .introInfo {
+            margin-top: 80px;
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .orderInfo {
+            margin-top: 60px;
+            margin-bottom: 80px;
+            text-align: center;
+        }
+
+        .h1, h5 {
+            display: inline;
+        }
+
+        .exchange {
+            margin-top: 20px;
+            margin-left: 20px;
+            color: #86989B;
+        }
+
+        /*.order {*/
+        /*    text-align: center;*/
+        /*}*/
+
+        .ordersList {
+            margin-top: 80px;
+            margin-bottom: 30px;
+        }
+    </style>
+
+    <script>
+        $('.carousel').carousel({
+            interval: 1000
+        })
+
+        $(document).ready(function () {
+            $('#orders-box').html("");
+            showOrders();
+            showExchange();
+        });
+
+        function isCellPhone(p) {
+            let regExp = /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})[-][0-9]{3,4}[-][0-9]{4}$/;
+            return regExp.test(p);
+        }
+
+        function orderAlarm() {
+            let name = $('#order-name').val()
+            let product = $('#order-product').val()
+            let address = $('#order-address').val()
+            let phone = $('#order-phone').val()
+            let resolution = $('#write-myDream').val()
+
+            if (name == '') {
+                alert("이름을 입력해주세요.");
+                $('#order-name').focus();
+                return
+            } else if (product == '-- 제품을 선택하세요 --') {
+                alert("제품을 선택해주세요.");
+                $('#order-product').focus();
+                return
+            } else if (address == '') {
+                alert("주소를 입력해주세요.");
+                $('#order-address').focus();
+                return
+            } else if (phone == '') {
+                alert("핸드폰 번호를 입력해주세요.");
+                $('#order-phone').focus();
+                return
+            } else if (!isCellPhone(phone)) {
+                alert("휴대폰번호 입력 형식이 틀립니다.\n010-0000-0000으로 입력해주세요");
+                return
+            } else if (resolution == '') {
+                alert("새해 소망을 안 적으셨네요. 새해 소망을 알려주세요.^^");
+                $('#write-myDream').focus();
+                return
+            } else if ($("#order-check").is(":checked") == false) {
+                alert("주의사항을 읽고 체크해주세요.");
+                $('#order-check').focus();
+                return
+            }
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {
+                    name_give: name,
+                    product_give: product,
+                    address_give: address,
+                    phone_give: phone,
+                    resolution_give: resolution
+                }, success: function (response) {
+                    if (response['result'] == 'success') {
+                        alert('주문이 성공적으로 완료되었습니다.');
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+
+        function showOrders() {
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        let orders = response['orders'];
+                        for (let i = 0; i < orders.length; i++) {
+                            makeOrderTable(orders[i]['name'], orders[i]['product'], orders[i]['resolution'])
+                        }
+                    } else {
+                        alert('주문을 받아오지 못했습니다ㅠㅠ');
+                    }
+                }
+            })
+        }
+
+        function makeOrderTable(name, product, resolution) {
+            let tempHtml = `<tr>\
+                            <td>${name}</td>
+                            <td>${product}</td>
+                            <td>${resolution}</td>
+                            </tr>`;
+            $('#orders-box').append(tempHtml);
+        }
+
+        function showExchange() {
+            $.ajax({
+                type: "GET",
+                url: "https://api.manana.kr/exchange/rate.json",
+                data: {},
+                success: function (response) {
+                    for (let i = 0; i < response.length; i++) {
+                        if (response[i]['name'] === "USDKRW=X") {
+                            $('#dollar-exchange').text(response[i]['rate']);
+                            return;
+                        }
+                    }
+                }
+
+            })
+        }
+
+        //
+        // let priceList = [99, 119, 89]
+        // for (let i = 0; i < priceList.length; i++) {
+        //    result.value=
+
+        // function calculateKRW() {
+        //     let exchangeWON = $('#dollar-exchange').val();
+        //     let priceList = [99, 119, 89]
+        //     for (let i = 0; i < priceList.length; i++) {
+        //     return 'exchangeWON','priceList')
+
+        // function validateLength(resolution) {
+        //     let content = $(resolution).val();
+        //     if (content.length > 30) {
+        //         alert("새해소망은 30자까지 기록할 수 있습니다.");
+        //         $(resolution).val(content.substring(0, content.length - 1));
+        //     }
+        // }
+
+    </script>
+</head>
+
+<body>
+<!-- 상단 site title -->
+<header>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand bg-dark" href="#"><span
+                class="font-weight-bold text-danger bg-dark">Happy New Year 2021 </span> what is your
+            new year's resolution? </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse bg-dark" id="navbarCollapse">
+            <ul class="navbar-nav bg-dark mr-auto">
+                <li class="nav-item active bg-dark">
+                    <a class="nav-link" href="#"> HOME <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item bg-dark">
+                    <a class="nav-link" href="#"> Be Strong </a>
+                </li>
+                <li class="nav-item bg-dark">
+                    <a class="nav-link" href="#"> Be Smart </a>
+                </li>
+                <li class="nav-item bg-dark">
+                    <a class="nav-link" href="#"> Be Sweet </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<!-- 상단 아래 main page -->
+<main role="main">
+    <div class="wrap">
+        <!-- 이미지 슬라이드 쇼 -->
+        <div id="myCarousel" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators bg-dark">
+                <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                <li data-target="#myCarousel" data-slide-to="1"></li>
+                <li data-target="#myCarousel" data-slide-to="2"></li>
+                <li data-target="#myCarousel" data-slide-to="3"></li>
+                <li data-target="#myCarousel" data-slide-to="4"></li>
+                <li data-target="#myCarousel" data-slide-to="5"></li>
+                <li data-target="#myCarousel" data-slide-to="6"></li>
+            </ol>
+
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img class="img-responsive"
+                         src="https://www.clearlysurely.com/blog/wp-content/uploads/2017/09/Jim-Rohn.jpg"
+                         alt="main img" width="2150" height="770">
+                </div>
+                <div class="carousel-item">
+                    <img class="img-responsive"
+                         src="https://d2.alternativeto.net/dist/s/quotefancy_363399_full.jpg?format=jpg&width=1600&height=1600&mode=min&upscale=false"
+                         alt="First slide" width="2150" height="770">
+                </div>
+                <div class="carousel-item">
+                    <img class="img-responsive"
+                         src="https://i.ytimg.com/vi/OcBcw74ufxM/maxresdefault.jpg"
+                         alt="Second slide" width="2150" height="770">
+                </div>
+                <div class="carousel-item">
+                    <img class="img-responsive"
+                         src="https://wallpapercave.com/wp/wp2303516.jpg"
+                         alt="Third slide" width="2150" height="770">
+                </div>
+                <div class="carousel-item">
+                    <img class="img-responsive"
+                         src="https://quotefancy.com/media/wallpaper/3840x2160/6361108-Pablo-Picasso-Quote-Everything-you-can-imagine-is-real.jpg"
+                         alt="Fourth slide" width="2150" height="770">
+                </div>
+                <div class="carousel-item">
+                    <img class="img-responsive"
+                         src="https://quotefancy.com/media/wallpaper/3840x2160/1699980-Rumi-Quote-What-you-seek-is-seeking-you.jpg"
+                         alt="Fifth slide" width="2150" height="770">
+                </div>
+                <div class="carousel-item">
+                    <img class="img-responsive"
+                         src="https://quotefancy.com/media/wallpaper/3840x2160/23391-Albert-Einstein-Quote-If-you-want-to-live-a-happy-life-tie-it-to-a.jpg"
+                         alt="sixth slide" width="2150" height="770">
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+
+        <!-- 제품 간략소개 -->
+        <div class="container marketing">
+            <div class="row introInfo">
+                <div class="col-lg-4">
+                    <img class="rounded-circle" src="https://img.allurekorea.com/allure/2018/05/style_5b0616eb346c3.jpg"
+                         alt="product1" width="140" height="140">
+                    <p>
+                    <h2 class="font-weight-bold text-primary">Be Strong</h2></p>
+                    <p>
+                        " 새해에 더 건강하게 살기로 결심하셨나요?<br> 건강을 위한 첫걸음은 바로 운동!이죠.<br> 코로나로 밖에서 운동은 어려운 요즘,<br>
+                        <span class="font-weight-bold">홈트를 위한 'Be Strong' SET가 <br>당신의 결심을 도와줄 거예요:D "</span>
+                    </p>
+                    <p>
+                    <h3 id="price">$99</h3></p>
+                    <p>
+                        <a class="btn btn-secondary" href="#" role="button">자세히 보러가기>> </a>
+                    </p>
+                    <p>
+                        구성: 매트+케어링+아령+마사지볼+밴드2종+체중계
+                    </p>
+                </div>
+
+                <div class="col-lg-4">
+                    <img class="rounded-circle"
+                         src="https://d32gkk464bsqbe.cloudfront.net/LHvcGRwHcbyGRiMA7k3fgDoyBRI=/1000x600/contents/o/3e72b8a49bee5822f62193c8c3e83218d39a8cae.jpeg"
+                         alt="product2" width="140" height="140">
+                    <p>
+                    <h2 class="font-weight-bold text-primary">Be Smart</h2></p>
+                    <p>
+                        " 새해에 더 나은 내가 되기로 결심하셨나요?<br> 그동안 미뤄왔던 나를 위한 공부!<br> 독서와 외국어 학습은 아니신지요? <br>
+                        <span class="font-weight-bold">자기계발을 위한 'Be Smart' SET가<br> 당신의 결심을 도와줄 거예요:D "</span>
+                    </p>
+                    <p>
+                    <h3 id="price">$119</h3></p>
+                    <p>
+                        <a class="btn btn-secondary" href="#" role="button">자세히 보러가기>> </a>
+                    </p>
+                    <p>
+                        구성: 20만원 상당 책 및 외국어 강의 구매 가능 쿠폰
+                    </p>
+                </div>
+
+                <div class="col-lg-4">
+                    <img class="rounded-circle"
+                         src="https://image.edaily.co.kr/images/Photo/files/NP/S/2017/09/PS17092700574.png"
+                         alt="product3" width="140" height="140">
+                    <p>
+                    <h2 class="font-weight-bold text-primary">Be Sweet</h2></p>
+                    <p>
+                        " 새롭게 해야 할 것들이 너무나도 많은데<br>잠을 설쳐 힘드시진 않으신지요?<br>수면을 통한 에너지 충전 놓치지 마세요!<br>
+                        <span class="font-weight-bold">숙면을 위한 'Be Sweet' SET가<br> 당신의 결심을 도와줄 거예요:D "</span>
+                    </p>
+                    <p>
+                    <h3 id="price">$89</h3></p>
+                    </p>
+                    <p>
+                        <a class="btn btn-secondary" href="#" role="button">자세히 보러가기>> </a>
+                    </p>
+                    <p>
+                        구성: 숙면 아로마 오일/미스트 + 디퓨저 + 수면안대
+                    </p>
+                </div>
+                <p class="exchange"> [달러-원 환율 :$1 =<span id="dollar-exchange"></span>원]</p>
+            </div>
+
+
+            <!-- order now!-->
+            <hr class="divider">
+            <div class="orderInfo">
+                <h1>- <span class="text-danger">ORDER NOW</span> FOR YOUR <span
+                        class="text-warning">NEW YEAR'S RESOLUTION</span> -</h1>
+                <p><h5 class="font-italic">It's not how good you are. It's how good you want to be.</h5></p>
+                <p>아래 주문서를 작성하시면서, 새해 소망을 같이 적어주시는 분 중 <span class="font-weight-bold">매월 3분을 추첨</span> 하여,
+                    <span class="font-weight-bold">스타벅스 기프티콘</span>을 보내드려요:D </p>
+
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">주문자 이름</span>
+                    </div>
+                    <input type="text" class="form-control" id="order-name" placeholder="ex)차정화">
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text">제품 선택</label>
+                    </div>
+                    <select class="custom-select" id="order-product">
+                        <option selected>-- 제품을 선택하세요 --</option>
+                        <option value="1.Be Strong 세트">Be Strong 세트 : 홈트 기구 패키지</option>
+                        <option value="2.Be Smart 세트">Be Smart 세트 : 도서 및 외국어공부 패키지</option>
+                        <option value="3.Be Sweet 세트">Be Sweet 세트 : 숙면 아이템 패키지</option>
+                    </select>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">받으실 주소</span>
+                    </div>
+                    <input type="text" class="form-control" id="order-address" placeholder="ex)서울시 강남구 xx로 00길 00">
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">연락처</span>
+                    </div>
+                    <input type="text" class="form-control" id="order-phone" placeholder="ex)010-1234-5678">
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">새해 소망</span>
+                    </div>
+                    <input type="text" class="form-control" id="write-myDream" placeholder="ex)10kg 감량/ 책 연 100권 읽기">
+                </div>
+
+                <!-- 주문 전 마지막 더블체크-->
+                <div class="custom-control custom-checkbox text-left">
+                    <input type="checkbox" class="custom-control-input" id="order-check">
+                    <label class="custom-control-label" for="order-check">주의사항)성명, 주소 연락처 등 정확히 기재하였습니다.(필수)</label>
+                </div>
+                <div class="custom-control custom-checkbox text-left">
+                    <input type="checkbox" class="custom-control-input" id="save-info">
+                    <label class="custom-control-label" for="save-info">위 정보를 다음 구매시에도 사용할 수 있게 저장해주세요.(선택)</label>
+                </div>
+
+                <div>
+                    <button onclick="orderAlarm()" type="button" class="btn btn-primary">주문하기</button>
+                </div>
+            </div>
+            <!-- orderlist-->
+            <hr class="divider">
+            <div class="ordersList">
+                <p><h4 class="text-left">[Order List]</h4></p>
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th style="width: 20%">고객 이름</th>
+                        <th style="width: 25%">주문 제품</th>
+                        <th style="width: 55%">새해 소망</th>
+                    </tr>
+                    </thead>
+                    <tbody id="orders-box">
+                    <tr>
+                        <td>차정화</td>
+                        <td>oocjh12@naver.com</td>
+                        <td>서울 및 수도권</td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
